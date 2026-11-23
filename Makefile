@@ -1,4 +1,8 @@
-.PHONY: format lint typecheck test check
+.PHONY: format lint typecheck test check diagram
+
+diagram:
+	classpy sync
+	PLANTUML_LIMIT_SIZE=16384 plantuml -tpng docs/diagrams/*.puml
 
 format:
 	-poetry run docformatter src tests
@@ -12,4 +16,4 @@ typecheck:
 test:
 	-poetry run pytest
 
-check: format lint typecheck test
+check: diagram format lint typecheck test

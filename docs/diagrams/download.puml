@@ -60,6 +60,10 @@ package "Model Domain Layer" #FFF8E1 {
         + fetch(spec: DownloadSpec): None
     }
     DownloadStrategy ..> DownloadSpec
+
+
+    class DownloadRegistry <<implemented>> {
+    }
 }
 
 

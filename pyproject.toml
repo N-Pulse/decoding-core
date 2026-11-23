@@ -39,3 +39,7 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
 ]
+
+[tool.classpy]
+puml = "docs/diagrams/download.puml"
+src  = "src/decoding/download"

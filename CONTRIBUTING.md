@@ -33,6 +33,7 @@ This formats the code, then runs pylint, pyright and the tests. Everything must 
 
 - Write one only when it says something the name and type hints don't: an assumption, a unit, a side effect, an error the caller should expect, or the contract a subclass must follow.
 - Use Google style (`Args:`, `Returns:`, `Raises:`, `Examples:`), and only the sections that add information.
+- Do not write module docstrings. Context that spans a module goes in its architecture's README, if it has one.
 - Write examples as doctests (`>>>`), so they render in Sphinx and run as tests.
 
 ## Attribution

@@ -1,48 +1,52 @@
 # Download
 
-Layers: `service` (`Downloader`) → `domain` (specs, strategies, registry) → `adapters` (one per source). `Registry` subclasses the shared `bmiemg.utils.Registry`.
+Fetches datasets from remote sources into a local folder. You describe what to download with a spec and pass it to `Downloader`, which picks the strategy registered for that spec's source, checks the source is reachable, then downloads.
 
-To add a source, create `adapters/<source>/` with `<source>_specs.py` (a `DownloadSpec` dataclass with `source: ClassVar[str] = "<source-name>"`) and `<source>_strategy.py` (a `DownloadStrategy[<Source>Specs]` decorated with `@Registry.register(<Source>Specs.source)`), re-export both from the folder's and `adapters/__init__.py` so the strategy registers on import, and add an entry script in `scripts/00_download/`.
+```python
+from decoding.download import Downloader, ZenodoSpecs
 
-## Zenodo source
-
-Downloads one file of a Zenodo record, checks its size and MD5, then optionally extracts it as a zip. A valid file already on disk is not downloaded again. No credentials needed. Dataset values (record and file) live in the entry script, not the adapter.
-
-| Parameter | Default | Meaning |
-|---|---|---|
-| `dest` | required | Local folder for the downloaded file |
-| `record_id` | required | Zenodo record |
-| `filename` | required | File of the record to fetch |
-| `extract` | `True` | Unzip the file after download |
-| `extract_to` | `dest/<file stem>` | Folder to extract into |
-
-`scripts/00_download/download_epn612.py` fetches EMG-EPN-612 (record `4421500`, `EMG-EPN612 Dataset.zip`) into `data/raw/emg_epn_612`, the folder prune reads:
-
-```bash
-poetry run python scripts/00_download/download_epn612.py
+spec = ZenodoSpecs(dest="data/raw/emg_epn_612", record_id=4421500, filename="EMG-EPN612 Dataset.zip")
+Downloader().run(spec)
 ```
 
-## Archive source
+## Adding a source
 
-Pulls files from EPFL's WebDAV archive (`make-archives.epfl.ch`).
+A source is a pair of classes in `adapters/<source>/`:
 
-1. Install dependencies: `poetry install`.
-2. Copy `.env.example` to `.env` and fill in your credentials (never commit them):
+- **Spec** (`<source>_specs.py`): a `DownloadSpec` dataclass that holds the values of one download (record id, remote path, credentials). Set `source: ClassVar[str] = "<source-name>"`.
+- **Strategy** (`<source>_strategy.py`): a `DownloadStrategy[<Source>Specs]` that holds the logic to reach the source. Implement `validate` (fail fast, write nothing) and `fetch` (download into `spec.dest`, safe to re-run). Decorate it with `@DownloadRegistry.register(<Source>Specs.source)`.
 
-   ```env
-   MAKER_USERNAME=<your username>
-   MAKER_APP_PASSWORD=<your app password>
-   MAKER_DAV_USER=<your dav user>
-   ```
+Re-export both from the folder's `__init__.py` and from `adapters/__init__.py` so the strategy registers on import, then add a row to the table below.
 
-3. Set the remote `url` and local `dest` in `scripts/00_download/download_archive.py`, then run it (it loads `.env` automatically):
+## Sources
 
-   ```bash
-   poetry run python scripts/00_download/download_archive.py
-   ```
+| Source | Spec | Strategy | What it does |
+|---|---|---|---|
+| `zenodo` | `ZenodoSpecs` | `ZenodoStrategy` | Downloads one file of a Zenodo record, checks its size and MD5, and unzips it if `extract` is set. No credentials needed. |
+| `archive-raw` | `ArchiveSpecs` | `ArchiveStrategy` | Mirrors a folder of EPFL's WebDAV archive (`make-archives.epfl.ch`) into `dest`, skipping files already downloaded. Needs credentials, see below. |
 
-### Getting the credentials
+<details>
+<summary>Getting the archive credentials</summary>
 
-- **`MAKER_USERNAME`** — Is your EPFL username
-- **`MAKER_APP_PASSWORD`** — Go to Profile Settings (top right) on the Archive MAKE Drive > Security > Create New App Password
-- **`MAKER_DAV_USER`** — Go to Files Settings (bottom left) on the Archive MAKE drive > WebDAV > Copy the URL and past the code in the URL that comes after https://make-archives.epfl.ch/remote.php/dav/files/
+- **`username`**: your EPFL username.
+- **`password`**: an app password. On the Archive MAKE Drive, go to Profile Settings (top right) > Security > Create New App Password.
+- **`dav_user`**: on the Archive MAKE Drive, go to Files Settings (bottom left) > WebDAV, copy the URL and take the part after `https://make-archives.epfl.ch/remote.php/dav/files/`.
+
+Never commit them.
+
+</details>
+
+## Review status
+
+A ✅ means the file was reviewed by a TL/SE.
+
+| File | Reviewed | Commit/PR |
+|---|---|---|
+| `domain/download_spec.py` | ✅ | |
+| `domain/download_strategy.py` | ✅ | |
+| `domain/download_registry.py` | ✅ | |
+| `service/downloader.py` | ✅ | |
+| `adapters/zenodo/zenodo_specs.py` | | |
+| `adapters/zenodo/zenodo_strategy.py` | | |
+| `adapters/archive/archive_specs.py` | | |
+| `adapters/archive/archive_strategy.py` | | |

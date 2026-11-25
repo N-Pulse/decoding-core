@@ -1,8 +1,10 @@
 # ================================================================
 # 0. Section: IMPORTS
 # ================================================================
+from typing import Any
 from pathlib import Path
 from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
 
 
 # ================================================================
@@ -10,6 +12,6 @@ from dataclasses import dataclass
 # ================================================================
 @dataclass
 class XdfData:
-    streams: list[dict]
-    metadata: dict
+    streams: Sequence[dict]
+    metadata: Mapping[str, Any]
     path_of_origin: Path

@@ -21,3 +21,9 @@ class DateFilter(Step[XdfData, XdfData]):
     def run(self, data: XdfData) -> XdfData | None:
         if data.date < self.end_date and data.date > self.start_date:
             return data
+
+    def validate_input(self, data: XdfData) -> None:
+        return super().validate_input(data)
+
+    def validate_output(self, output: XdfData) -> None:
+        return super().validate_output(output)

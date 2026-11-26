@@ -5,7 +5,7 @@ import pyxdf
 
 from pathlib import Path
 from typing import ClassVar, Any, overload
-from pypeline.adaptors import ActorIO, ActorIORegistry
+from pypeline import ActorIO, ActorIORegistry
 from collections.abc import Callable, Iterator, Mapping, Sequence
 
 from ...domain.actors import XdfData
@@ -22,14 +22,17 @@ def read_xdf(path: Path) -> XdfData:
         path_of_origin=path,
     )
 
+def write_txt(actor: XdfData, path: Path) -> None:
+    path.write_text(str(actor.path_of_origin), encoding="utf-8")
+
 
 # ================================================================
 # 2. Section: Class definitions
 # ================================================================
-@ActorIORegistry.register("XDF")
+@ActorIORegistry.register("XdfData")
 class XdfIO(ActorIO):
     readers: ClassVar[dict[str, Callable[[Path], Any]]] = {".xdf": read_xdf}
-    writers: ClassVar[dict[str, Callable[[Any, Path], None]]] = {}
+    writers: ClassVar[dict[str, Callable[[Any, Path], None]]] = {".txt": write_txt}
 
 
 # ================================================================

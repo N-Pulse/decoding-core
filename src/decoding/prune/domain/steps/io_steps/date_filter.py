@@ -6,7 +6,7 @@ import datetime
 from dataclasses import dataclass
 from pypeline import Step, StepRegistry
 
-from ..actors import XdfData
+from ...actors import XdfData
 
 
 # ================================================================
